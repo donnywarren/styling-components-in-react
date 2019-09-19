@@ -6,7 +6,7 @@
 - Discuss the benefits and drawbacks of both approaches.
 - Show examples of the preferred standard for CSS-in-JS, `styled-components` library.
 
-## Framing (15 min / 0:15)
+## Framing (5 min / 0:05)
 
 In this lesson, we will be looking at how components are styled within a React
 application. We will compare and contrast the different approaches available to React developers, which include:
@@ -20,810 +20,316 @@ Let's review **components** quickly, just to make sure we're on the same page.
 
 ## Components
 
-Think back to F.I.R.S.T. principles of components. Components are:
+So what exactly is a component in react? Components come in two flavors: 
 
-- **focused**,
-- **independent**,
-- **reusable**,
-- **small**, and
-- **testable**.
+- class-based components
+- functional components
 
-We design components to do as little as possible (_small_, _focused_) with a
-minimal amount of dependence on other components (_independence_, _reusable_).
+We're going to concentrate on class-based components to help show the ways you can do styling. These differ a bit for functional React approaches (which will be talked about in a future unit).
 
-While components should be independent, we still need them to talk to each other
-by passing data. However, to keep components small and focused, we pass only the
-data that is _specific to that component's purpose_. Data that is passed into
-one component by a parent component (or the application root), we refer to as
-`props`.
+## Class-based Components (5 min / 0:10)
 
-Lets take a look at two components.
+Class-based components emerged as the standard for React as version `16` was [released publicly back in 2017](https://github.com/facebook/react/blob/master/CHANGELOG.md#1600-september-26-2017). This gave the React core team the ability to add `state` into components and generally changed how web apps could be developed.
 
-```jsx
-// HelloContainer.js
-import Hello from "./Hello.js"
+You've probably seen a few class-based components at this point, but they'll generally contain:
+- an `import` statement at the top
+- a custom `class` name that extends the `React.Component` subclass
+- a `constructor` that binds data to the component, and optionally houses a `state` object
+- some custom methods that modify that `state`
+- a `render()` method that uses `return` to render the component into a browser
 
-class HelloContainer extends Component {
-  render() {
-    return <Hello name={"Nick"} age={24} />
-  }
-}
-```
-
-```js
-// Hello.js
-// name and age are immutable inside this component
-class Hello extends Component {
-  render() {
-    return (
-      <div>
-        <h1>Hello {this.props.name}</h1>
-        <p>You are {this.props.age} years old</p>
-      </div>
-    )
-  }
-}
-```
-
-Here we are passing values, `"Nick"` and `24` into our first `Hello` component
-in `HelloContainer.js`, where we are **composing** `Hello` with the JSX
-expression, `<Hello name={"Nick"} age={24} />`.
-
-Any values that we pass into a component are called `props`. Inside of the
-component we refer to them as `this.props`
-
-Props are one of the things that make React so powerful and help us make
-**independent** and **reusable** components. We can pass different data to our
-`Hello` component and easily get the same html and css but with different data:
-
-**Any javascript type can be passed as a prop**. This means primitives, objects,
-arrays, and even functions are all passable.
+Here's a simple example of a component that shows some text from its state object:
 
 ```jsx
-
-// HelloContainer.js
-const jimmy = {
-  name: "Jimmy",
-  age: 32
-}
-
-const james = "jimmy"
-const jamesAge = 29
-
-const jimmyJames = ['jimbo']
-
-const helloJimmy = () => {
-  console.log('hello')
-}
-
-class HelloContainer extends Component {
-  render() {
-    <Hello name={"Nick"} age={24} />
-    <Hello name={jimmyJames[0]} age={30} />
-    <Hello name={james} age={jamesAge} />
-    <Hello name={jimmy.name} age={jimmy.age} />
-    <Hello name={helloJimmy} />
-  }
-}
-```
-
-We cannot change the values of received `props` inside a component - they are
-**immutable**.
-
-```js
-// DONT DO THIS EVER
-
-class Hello extends Component {
-  render() {
-    this.props.name = "not_jimmy"
-
-    return (
-      <div>
-        <h1>Hello {this.props.name}</h1>
-        <p>You are {this.props.age} years old</p>
-      </div>
-    )
-  }
-}
-```
-
-So what do we do with data we want to control from within a component?
-
-## State (10 min / 0:25)
-
-The limitation of props is that we can't change the data from within the
-component. The data that we can change within a component is called
-**[state](https://facebook.github.io/react/docs/state-and-lifecycle.html)**. We
-haven't talked about state much, but you have worked with it before. Your
-project 1 all tracked some state, regardless of which game you built:
-
-- **Trivia**: what is the current score, what card is currently displayed to the
-  user, is the user's input correct or incorrect?
-- **Simon**: what order of buttons did the user push, what is the order of
-  buttons they were supposed to push, what round or level are they on?
-- **Tower of Hanoi**: how many discs are in each tower, how many moves has the
-  user made?
-
-We can figure out the `state` of a turn-based game because there is a clear idea
-of a beginning and end and states that reflect progress from one turn to the
-next turn: what flash card is the user on, what buttons do they need to push,
-how are the discs distributed among the three towers.
-
-<details>
-  <summary>Q: So we know an application can have different states. But how do we transition in between them?</summary>
-
-> A: Events! (or user actions/input)
-
-</details>
-
-### F.I.R.S.T. Principles and State
-
-The aim of the F.I.R.S.T. principles is to create a sane approach to breaking
-down not just a user-interface, but also an application's data so it is
-easy-to-manage chunks of data and the components that render them.
-
-_Each component is concerned only with the data relevant to its purpose_.
-
-For your first project, you had to do that manually. Manually write event
-listeners that would update state stored in global scope and then update your UI
-by manually updating individual DOM nodes.
-
-You can think of React as an event-driven state machine, or a machine that
-churns out new states as a result of user interactions. A React application
-receives input through user interactions (event listeners) and outputs a UI that
-reflects a brand new state (new cards, higher score, etc).
-
-We tell React **how we want something to look**, and react does the work to
-update it for us. This is sometimes called `declarative` programming. This is in
-contrast to `imperative` programing, where we tell our code **what to do**.
-
-### So what is a React component's "state"?
-
-Each component has its own state. We define a component's state as a plain old
-javascript object in the constructor.
-
-```jsx
-class StatefulExample extends Component {
-  constructor() {
-    super()
-    this.state = {
-      examples: ["state is great", "state is fun"],
-      cool: true
-    }
-  }
-
-  render() {
-    return (
-      <div>
-        <p>React is cool, right? {this.state.cool}</p>
-        <ul>
-          {this.state.examples.map(example => (
-            <li>{example}</li>
-          ))}
-        </ul>
-      </div>
-    )
-  }
-}
-```
-
-The above code should output this:
-
-```html
-<div>
-  <p>React is cool, right? true</p>
-  <ul>
-    <li>state is great</li>
-    <li>state is fun</li>
-  </ul>
-</div>
-```
-
-State works just like any old javascript object. The only difference is that
-it's a variable called `this.state`, and its defined in the component's
-constructor.
-
-### State and Rendering
-
-Before moving on to build our application, it's worth mentioning another aspect
-of component `state`: our components re-render when it changes:
-
-![](./images/react-component-state-update.png)
-
-Our UI gets updated when state changes. The user takes some action, like
-submitting information via a form, and the component holding that form has a
-`state` that is updated with the value of the user's input.
-
-Previously we had to manage the relationship between what we saw on the page
-(UI) and what state our program was in. So if we updated the score, we also had
-to change the displayed score in the DOM. React does this automatically, as long
-as we wire up our state correctly.
-
-## Check for Understanding (10 min / 0:35)
-
-- What is the difference between `state` and `props`?
-- What do we use `props` for?
-- What do we use `state` for?
-
-We've done a fair amount of framing so far, so let's dive in to building our
-application!
-
-<details>
-<summary>Solution</summary>
-<ul>
-  <li> State is mutable and Props are designed to be passed to and from components and allows you to share information</li>
-  <li> Props allow us to pass data from one independent component to another, and can be used to compose instances from our reusable components.</li>
-  <li> State stores information that is specific to a component and that you don't intend to change</li>
-</ul>
-</details>
-
-## Exercise: React Counters (5 min / 0:40)
-
-For this exercise, we are going to build a React app from scratch that will
-serve as an [Abacus](https://en.wikipedia.org/wiki/Abacus) of sorts.
-
-Go ahead and clone
-[React Counters](https://git.generalassemb.ly/dc-wdi-react-redux/react-counters)
-now. This will be the code we start with.
-
-Take a look at the
-[deployed version of the application](http://react-counter.surge.sh/) for
-reference.
-
-```bash
-git clone git@git.generalassemb.ly:dc-wdi-react-redux/react-counters.git
-cd react-counters
-git checkout starter
-npm install
-npm start
-```
-
-### You Do: Identify Components (10 min / 0:50)
-
-> 5 minutes exercise. 5 minutes review.
-
-Today we'll work through the 5 stages of the excellently written guide called
-[_Thinking in React_](https://reactjs.org/docs/thinking-in-react.html).
-
-Based on step 1,
-[break the ui into a component hierarchy](https://reactjs.org/docs/thinking-in-react.html#step-1-break-the-ui-into-a-component-hierarchy),
-we'll identify what components we need to build and where they'll go.
-
-Look at the
-[deployed version of the application](http://react-counter.surge.sh/) and answer
-the following questions:
-
-- How many components does this application have?
-- What components is this application built of?
-
-### Components
-
-<details>
-  <summary><strong>Open to see the components</strong></summary>
-
-![](./images/react-counter-annotated.png)
-
-Here we've identified four components on the home page:
-
-1. The top level component, which we'll call `App`, is boxed in red
-2. The header component, a sub-component of `App`, is boxed in purple. We'll
-   call it `Header`
-3. The list of counters, also a sub-component of `App`, is boxed in blue. We'll
-   called it `CounterList`
-4. An individual container, a sub-component of `CounterList`, is boxed in green.
-   We'll call it `Counter`
-
-</details>
-
-<details>
-  <summary><strong>Open to see component hierarchy</strong></summary>
-
-  <h4>Component Hierarchy</h4>
-
-Given these breakdowns we have a component hierarchy that looks like this:
-
-- `App`
-  - `Header`
-  - `CounterList`
-    - `Counter`
-
-</details>
-
-### Sample Data
-
-In the final application, we'll be able to use the two buttons in the header to
-increase and decrease the number of individual counters on the page. However, to
-start, we're going to feed the number of counters into the application as
-hard-coded data.
-
-The below Javascript is in our `index.js` file.
-
-```js
-const data = {
-  counters: 5
-}
-```
-
-## Building a Static Version of the App (25 min / 1:15)
-
-> 25 minutes exercise / 15 minutes review.
-
-Part 2 calls for us to
-[build a static version](https://facebook.github.io/react/docs/thinking-in-react.html#step-2-build-a-static-version-in-react)
-of the app, which means passing all of our data by `props`. This makes it much
-easier to avoid getting bogged down in tricky details of functionality while
-implementing the visual appearance of the UI.
-
-### You Do: Set Up the `App` Component and `index.js`
-
-> 5 minutes exercise / 5 minute review
-
-Try to get it so that your `App` component displays the number of counters
-underneath the `Header` component (provided in the starter code).
-
-<details>
-  <summary>Solution</summary>
-
-```js
-// index.js
+// SimpleComponent.js
 import React from "react"
-import ReactDOM from "react-dom"
-import "./index.css"
-import App from "./App"
 
-const data = {
-  counters: 5
-}
-
-ReactDOM.render(<App data={data} />, document.getElementById("root"))
-```
-
-```js
-// App.js
-import React, { Component } from "react"
-import Header from "./Header"
-
-class App extends Component {
-  render() {
-    return (
-      <div className="App">
-        <Header />
-        <h4>{this.props.data.counters}</h4>
-      </div>
-    )
-  }
-}
-
-export default App
-```
-
-</details>
-
-### We Do: Set Up the `CounterList` and `Counter` Components
-
-> 10 minutes exercise / 5 minute review
-
-Create a `CounterList` component. It should take the number of counters, passed
-down as a prop called `counters` from `App.js`
-
-In `App.js`, render the `CounterList` component.
-
-Using that prop, render that many `Counter` components.
-
-Now create a `Counter` component. It should render `"Counter: 0"` inside of an
-`<h4>`, and two buttons (one for incrementing and one for decrementing).
-
-**Tip:** Use this example for the next 'You Do'. You can render an array of
-components! It looks something like this:
-
-```jsx
-class CounterList extends Component {
-  render() {
-    //you can use regular javascript right next to HTML thanks to JSX
-    let list = []
-    for (let i = 0; i < 3; i++) {
-      list.push(<SomeComponent />)
-    }
-    // list will now have 3 `SomeComponent` components in side of it
-
-    // now we can just render the list variable and it will show the 3 components
-    return <div className="list">{list}</div>
-  }
-}
-```
-
-<details>
-  <summary>Solution</summary>
-
-```js
-// Counter.js
-import React, { Component } from "react"
-
-class Counter extends Component {
-  render() {
-    return (
-      <div className="Counter">
-        <h4>Counter: 0</h4>
-        <button>Decrement</button>
-        <button>Increment</button>
-      </div>
-    )
-  }
-}
-
-export default Counter
-```
-
-```js
-// CounterList.js
-import React, { Component } from "react"
-import Counter from "./Counter"
-
-class CounterList extends Component {
-  render() {
-    let counters = []
-    for (let i = 0; i < this.props.counters; i++) {
-      counters.push(<Counter />)
-    }
-    return <div className="Counter-row">{counters}</div>
-  }
-}
-
-export default CounterList
-```
-
-`App.js:`
-
-```diff
-import React, { Component } from "react"
-import Header from "./Header"
-+import CounterList from "./CounterList"
-
-class App extends Component {
-  render() {
-    return (
-      <div className="App">
-        <Header />
-+       <CounterList counters={this.props.data.counters} />
--       <h4>{this.props.data.counters}</h4>
-      </div>
-    )
-  }
-}
-
-export default App
-```
-
-</details>
-
-## Break (10 min / 1:25)
-
-## Identify the Minimal Representation of UI State (5 min / 1:30)
-
-At the moment all of our data is being passed through our app as props. We know,
-however, that we will have data that changes as a user interacts with the app.
-That information needs to live in our application's state. We need to figure out
-what the
-[minimal amount of state](https://facebook.github.io/react/docs/thinking-in-react.html#step-3-identify-the-minimal-but-complete-representation-of-ui-state)
-our app needs and what components need it.
-
-### You Do: What information needs to live in state? (5 min / 1:35)
-
-This may include a value(s) that we have not yet included in our code.
-
-<details>
-  <summary>Solution</summary>
-
-For our app to work we need:
-
-- `numberOfCounters` (the number of counters to render in our `App` component)
-- `count` (the count of a `Counter` component)
-  </details>
-
-## Identify Where Your State Should Live (5 min / 1:40)
-
-Central to
-[deciding where state lives](https://facebook.github.io/react/docs/thinking-in-react.html#step-4-identify-where-your-state-should-live)
-is the idea of **one way data flow**. The React documentation describes this
-step as "often the most challenging part for newcomers to understand" since we
-are learning to distinguish state from props. It's a good idea to think about
-this ahead of time, but also remember that you can change things as needed.
-
-Our task here is to find the proper place for each part of our application's
-state.
-
-## Working with State (10 min / 1:50)
-
-Lets start with our `Counter` component. Right now, it doesn't have any state
-and it isn't passed any props. What we want is for the `Counter` component to
-keep track of its own count. Whenever someone clicks one of the two buttons
-we'll increase or decrease that number.
-
-### We Do: Update our `Counter` Component
-
-Lets update the `Counter` component so that it is using state to track the count
-internally and clicking one of the buttons changes the `count` number.
-
-```jsx
-import React, { Component } from "react"
-
-class Counter extends Component {
-  constructor() {
-    super()
-
-    this.state = { count: 0 }
-
-    this.increaseCount = this.increaseCount.bind(this)
-
-    /* using bind on methods we define is required if we want to access react's native methods, like setState */
-  }
-
-  increaseCount() {
-    this.setState({ count: this.state.count + 1 })
-  }
-
-  // an alternative to using bind is writing your methods with arrow functions
-  decreaseCount = () => {
-    this.setState({ count: this.state.count - 1 })
-  }
-
-  render() {
-    return (
-      <div className="Counter">
-        <h4>Counter: {this.state.count}</h4>
-        <button onClick={this.increaseCount}>Increment</button>
-        <button onClick={this.decreaseCount}>Decrement</button>
-      </div>
-    )
-  }
-}
-
-export default Counter
-```
-
-Now that we've made it so our `Counter` component is tracking it's count inside
-of state, we need to update our application so that the prop determining the
-number of counters is controlled by state.
-
-This segues nicely into the idea of Container and Presentational Components.
-
-## Container & Presentational Components (20 minutes / 2:10)
-
-The above workflow has led to the popular component architecture of
-distinguishing
-[Container and Presentational Components](https://medium.com/@dan_abramov/smart-and-dumb-components-7ca2f9a7c7d0).
-
-**Presentational components** are components that render themselves based solely
-on the information that they receive from props. They don't contain any of their
-own state.
-
-**Container components** are components whose job it is to exclusively manage
-state and and render presentational components, passing them the data they need
-as props.
-
-This leads to a very nice division where state management and presentation are
-cleanly separated.
-
-Our `App` component could be a **container component!**
-
-![component hierarchy](images/component-hierarchy.png)
-
-### You Do: Update `App`
-
-> 10 minutes exercise / 5 minutes review
-
-We want to track the number of `Counter` components to render. Right now, they're hardcoded and passed into the App component as a prop from `index.js`.
-
-Since we can't change props, we need to update our component and declare this value in `state` instead.
-
-Remove the counters variable from `index.js`. It's just a variable
-there, with no way for us to update it. Also remove the prop being passed into
-`App`.
-
-Then, make it so that the `App` component is tracking the number of counters (5)
-inside state and update what's being passed as a prop to the `CounterList` component.
-
-```jsx
-// App.js
-import React, { Component } from "react"
-import Header from "./Header"
-import CounterList from "./CounterList"
-
-class App extends Component {
-  constructor() {
-    super()
+class SimpleComponent extends Component {
+  // Make sure you set up a constructor and pass in props!
+  // This is how props attach to your class
+  constructor(props) {
+    super(props)
 
     this.state = {
-      counters: 5
+      statement = "You have more dollars than sense -John's dad."
     }
   }
+
   render() {
-    return (
-      <div className="App">
-        <Header />
-        <CounterList counters={this.state.counters} />
+    return 
+      <div> 
+        Now, a word from my dad: { this.state.statement }
       </div>
-    )
   }
 }
 
-export default App
+export default SimpleComponent
 ```
 
-Our `CounterList` component is now rendering the number of counters in the state
-of our `App` component, but we don't have a way to update our state!
+## CSS Styling of React Components (15 min / 0:25)
 
-Just like in your first project, we're going to update the state of our
-application in response to events. In this particular case, we'll update state
-(the number of counters to render) when someone clicks one of the two buttons in
-the header.
+Give the above component, styling with CSS presents a challenge for us: _where exactly do we put the styles?_ That is a tricky question with React. If you want to stick with straight CSS, you really have two options:
 
-There's just one issue: those two buttons are in our `Header` component (a
-presentational component).
+- Have a global stylesheet
+- Have per-component stylesheets
 
-## Add Inverse Data Flow (15 min / 2:10)
+Neither of these are inherently bad. And, in fact, you almost always want to use a global CSS document in addition to any CSS-in-JS way of doing styling in React. 
 
-We can give presentational components behavior by passing callback functions to
-them as props. By binding those callback functions to the parent, container
-component we can use them to update our state. In React, we refer to this as
-[inverse data flow](https://facebook.github.io/react/docs/thinking-in-react.html#step-5-add-inverse-data-flow).
+## Global Stylesheet
 
-We will need two functions defined in `App` and passed to `Header`.
+If we go with a global sheet, you want to add the `main.css` file to the root of the project, usually a `index.js` file you are provided. Up until now, this is probably what you've been seeing in the `create-react-app` boilerplate we've been showing you. That's a good indication people in the real world actual use this method. That's true to some extent - if the project is small enough. As a project grows, this becomes unruly.
 
-### You Do: Increase and Decrease the Number of Counters
+Applied to our component above, **you wouldn't see any CSS imports**. Again, we import to the `index.js` file which would then include the above component, so the styles are available down the component tree.
 
-Define an `increaseCounters()` method and `decreaseCounters()` method on the
-`App` component (they'll be a lot like the `increaseCount()` and
-`decreaseCount()` methods of our `Counter` component).
-
-Once your two methods are defined, pass them both to the `Header` component as
-props. What do you need to do inside of `Header` to make it so that when someone
-clicks on one of the buttons the number of counters increases or decreases?
-
-<details>
-<summary>Solution</summary>
+How do you access those styles? In React, you can't use `class` on your JSX components because `class` is a reserved word in JS. React gives you something pretty close: the `className` prop.
 
 ```jsx
-// App.js
-import React, { Component } from "react"
-import Header from "./Header"
-import CounterList from "./CounterList"
+import React from "react";
+import ReactDOM from "react-dom";
+import "./index.css";
+import SimpleComponent from "./simplecomponent.js";
 
-class App extends Component {
-  constructor() {
-    super()
+// Note that the CSS import above will filter into this component
+ReactDOM.render(<SimpleComponent />, document.getElementById("root"));
+```
+
+```jsx
+// SimpleComponent.js
+import React from "react"
+
+class SimpleComponent extends Component {
+  constructor(props) {
+    super(props)
 
     this.state = {
-      counters: 5
+      statement = "You have more dollars than sense -John's dad."
     }
-    this.decreaseCounters = this.decreaseCounters.bind(this)
-    this.increaseCounters = this.increaseCounters.bind(this)
-  }
-
-  increaseCounters() {
-    let counters = this.state.counters + 1
-
-    this.setState({ counters }, () => console.log(this.state.counters))
-    // this.setState({ counters })
-    // console.log(this.state.counters)
-  }
-
-  decreaseCounters() {
-    let counters = this.state.counters - 1
-
-    this.setState({ counters }, () => console.log(this.state.counters))
-    // this.setState({ counters })
-    // console.log(this.state.counters)
   }
 
   render() {
-    return (
-      <div className="App">
-        <Header
-          increaseCounters={this.increaseCounters}
-          decreaseCounters={this.decreaseCounters}
-        />
-        <CounterList counters={this.state.counters} />
+    // Notice all that I added in my return is `className` that's sufficient to hook into the global stylesheet
+    return 
+      <div className="dad-block"> 
+        Now, a word from my dad: { this.state.statement }
       </div>
-    )
   }
 }
 
-export default App
+export default SimpleComponent
 ```
+
+## Component-level Stylesheet
+
+You can continue to use plain CSS and still conform to the component pattern React sets up in our app. Just break your per-component styles into separate stylesheets. Typically, you'll see each sheet paired with a component in a sub-folder tucked nicely into the `src` folder of your app.
+
+So, for example, lets say you had our `SimpleComponent`. You might have it nested one folder deep in a folder called 'interactive'. There might also be another folder called 'global' which contains: `Header`, `Footer`, and `Sidebar`. 
+
+In such a layout, you'd see the following:
+
+![css sheet hierarchy](./images/css-per-component.png)
+
+Inside of our `SimpleComponent` you would include the CSS file, much like you've been doing in your project's base `index.js`. Down in `render` just use the `className` prop to apply your normal CSS selectors like you've been doing all along:
 
 ```jsx
-// Header.js
-import React, { Component } from "react"
+// SimpleComponent.js
+import React from "react"
+import "./simple-component.css"
 
-class Header extends Component {
+class SimpleComponent extends Component {
+  constructor(props) {
+    super(props)
+
+    this.state = {
+      statement = "You have more dollars than sense -John's dad."
+    }
+  }
+
   render() {
-    return (
-      <header className="App-header">
-        <h1 className="App-title">React Counters</h1>
-        <button onClick={this.props.increaseCounters}>+</button>
-        <button onClick={this.props.decreaseCounters}>-</button>
-      </header>
-    )
+    // Notice all that I added in my return is `className` that's sufficient to hook into the global stylesheet
+    return 
+      <div className="dad-block"> 
+        Now, a word from my dad: { this.state.statement }
+      </div>
   }
 }
 
-export default Header
+export default SimpleComponent
 ```
 
-</details>
+The advantages of this approach are that you can pair the JS/JSX/React component with its styles and then reasonably expect the styles to match the component you're looking at. This is a huge upgrade over having one global sheet where concerns can quickly get complicated. 
 
-## Closing (5 min / 2:30)
+On projects of sufficient scale, breaking up CSS is a must. Think about the developer experience of having Instagram or Spotify's entire site running off of one stylesheet. Try managing those merge conflicts!
 
-If asked, could you explain the differences between props and state? We've now
-covered the differences between the two as well as how you can use state to
-control data inside a component and how to update state to display new data to a
-user.
+And while separated stylesheets are a win, could we do even better? 
 
-Defining components and working with props and state (data) constitutes the
-majority of the work of building a React application.
+## CSS-in-JS Concept (15 min / 0:40)
 
-### Solution Branch: (do this in a separate folder)
+If you keep pulling the string on separating your styles to get them closer to your components, eventually you'll probably consider putting the styles **directly into your component**. This is very much a thing you can do.
 
-- git clone git@git.generalassemb.ly:dc-wdi-react-redux/react-counters.git
-- cd react-counters
-- git checkout solution
-- npm install
-- npm run start
+## React Inline Styles
 
-## Bonus
+React natively supports this behavior natively with the `style` prop and does inline styling on your component elements. This sounds crazy coming from a page-based setup, but in React it becomes _slightly_ less crazy. 
 
-### Style in React
+With React, we have no pages so we don't have to worry as much about where each sheet gets referenced. And components get loaded as needed, so if you pair the styles directly to the component, they're right where they need to be. They only get invoked and added into the DOM when it's time.
 
-When it comes to adding styles to React, there is a bit of debate over what's
-the best practice. Facebook's official docs and recommendations are to write
-stylesheets that treat your CSS rule declarations as properties on one big
-Javascript object that can be passed into components via inline styles.
+Note how the styles are written in the `render` method (camelCase with values surrounded by quotes - otherwise the normal styling rules apply):
 
-From the [Docs](https://facebook.github.io/react/tips/inline-styles.html)...
+```jsx
+// SimpleComponent.js
+import React from "react"
 
-> "In React, inline styles are not specified as a string. Instead they are
-> specified with an object whose key is the camelCased version of the style
-> name, and whose value is the style's value, usually a string"
+class SimpleComponent extends Component {
+  constructor(props) {
+    super(props)
 
-However, this kind of rethinking the wheel feels like a step backwards for a lot
-of designers and developers who cringe at the notion of inline styles. For them,
-they choose to build React apps through a more traditional flow of adding ids
-and classes and then targeting elements via external stylesheets.
+    this.state = {
+      statement = "You have more dollars than sense -John's dad."
+    }
+  }
 
-Also, via Webpack and other custom loaders, it is possible to use many
-third-party libraries or processors such as SASS, LESS, and Post-CSS.
+  render() {
+    // using style prop, note how the styles are written
+    // each one separated by a comma, camelCase, value in quotes
+    return 
+      <div style={ margin: '5px', backgroundColor: 'rgb(15,15,15)' }> 
+        Now, a word from my dad: { this.state.statement }
+      </div>
+  }
+}
 
-Interesting to note, this problem has not been universally solved, and thus the
-debate will most likely continue to rage on until somebody figures it out.
-Therefore, its often left to a team decision when choosing the best option for
-the application.
+export default SimpleComponent
+```
 
-Interested in learning more? Check out some excellent blog posts on the subject
-from the front-end community:
+Inline styles are used, but not that often. There are still better ways...
 
-- https://medium.com/@jviereck/modularise-css-the-react-way-1e817b317b04#.61qgjgdu3
-- http://jamesknelson.com/why-you-shouldnt-style-with-javascript/
-- http://stackoverflow.com/questions/26882177/react-js-inline-style-best-practices
-- https://css-tricks.com/the-debate-around-do-we-even-need-css-anymore/
+## Variables as styles
 
-### [Example of Object Literal Styles with React](https://github.com/ga-wdi-exercises/react-omdb/commit/830697fc68dcdccafcae9f73e711103de8d93fc9)
+You can take this same idea a bit further if you want to abstract the property/value pairs off the component in JSX. It is possible to move the style property/value pairs into object literal variables, usually defined as `const`.
 
-> **Reminder**: `class` is a protected keyword in React, in order to add a class
-> attribute to an element use the keyword `className`
+Those variables contain property/value pairs without the familiar selectors you are probably looking for (note that the properties are camelCased, ie if you have `background-color` that becomes `backgroundColor` in React)
 
-To add the finishing touches to our application, let's take a stab at styling
-our app with inline-styles and advance our markup with some help from
-Bootstrap...
+```jsx
+// SimpleComponent.js
+import React from "react"
 
-- Load in Bootstrap CDN in `index.html`
-- Modify UI to include Bootstrap classes
-- Create a `styles` directory and make a file for your CSS rule definitions -
-  this will be written in Javascript!
-- Load in that file in any component and then use that to apply inline styling
+// Define style variables below import statements, but above class declaration
+// Same syntax as doing them inline, camelCase with values in quotes
+const dadBlock = {
+  margin: '40px',
+  border: '5px solid pink'
+};
+
+class SimpleComponent extends Component {
+  constructor(props) {
+    super(props)
+
+    this.state = {
+      statement = "You have more dollars than sense -John's dad."
+    }
+  }
+
+  render() {
+    // use the same style prop, but throw the const object you made above in there
+    return 
+      <div style={ dadBlock }> 
+        Now, a word from my dad: { this.state.statement }
+      </div>
+  }
+}
+
+export default SimpleComponent
+```
+
+Now, this is starting to look like a stylesheet a bit if we squint our eyes. The styles are finally being written in the component, we can add as many of them as we need and the object literals look a lot like selector names. 
+
+We're also not bloating global scope with this approach, it's all invoked only when this component gets called through the DOM tree by React. The advantages are adding up, but if we could enhance this same concept another couple of notches???
+
+
+## True CSS-in-JS, Styled Components (30 min / 1:10)
+
+There are many libraries that customize and tweak the concept React natively supports (that we just reviewed. The biggest libraries you can use are listed:
+
+-[Radium](https://github.com/FormidableLabs/radium)
+-[Aphrodite](https://github.com/Khan/aphrodite)
+-[Emotion](https://github.com/emotion-js/emotion)
+-[styled-components](https://www.styled-components.com/)
+
+In general, the React ecosystem has moved away from wrapping components in components, a phenomenon called [Higher Order Components](https://reactjs.org/docs/higher-order-components.html) - which is how Radium works. Render props and now Hooks have largely supplanted this idea, which means Radium will probably need a major rewrite in the future. (We haven't used Aphrodite in production but it definitely has a following)
+
+Emotion is very similar to styled-components, so it's hard to argue for one over the other. But the ecosystem has spoken and the default CSS-in-JS package has become `styled-components` over the last couple years. We've used it multiple times in production level applications and been very happy with both the developer experience and the overall ease of use. 
+
+All of these packages are worth exploring, but we're going to focus in on styled-components and show you the ins-and-outs of it.
+
+
+## Advanced Usage of styled-components
+
+`styled-components` extend the ideas in React's native styling in very useful, creative ways. Instead of them being objects, they are template literals. Inside each literal, you're extended the `styled-components` object (usually written as `styled`) and attaching a DOM element to it. The entire expression is put into a variable.
+
+This has a myriad of benefits:
+- you can use semantic HTML with React (instead of just having `<div>` soup)
+- writing styles looks much more like native CSS, no more camelCase with values in quotes
+- now you can splice in real JS right into your styles directly (more on this in a minute)
+
+Here's our same `SimpleComponent`, now rendered with a `styled-component`:
+
+```jsx
+// SimpleComponent.js
+import React from "react"
+import styled from 'styled-components'
+
+// Look at the styled-component, nicely laid out as a template literal
+// Looks much more like a typical CSS style to my eye
+// Variable definition is often written PascalCase, not camelCase
+const DadBlock = styled.section`
+  margin: 40px;
+  border: 5px solid pink;
+`
+
+class SimpleComponent extends Component {
+  constructor(props) {
+    super(props)
+
+    this.state = {
+      statement = "You have more dollars than sense -John's dad."
+    }
+  }
+
+  render() {
+    // notice how we call our styled-component, no more style prop
+    // the style is now infused into our custom component and will render as a <section>
+    return 
+      <Dadblock>
+        Now, a word from my dad: { this.state.statement }
+      </Dadblock>
+  }
+}
+
+export default SimpleComponent
+```
+
+The first time you see this, it's kinda shocking. We're been separating out our CSS, JS and HTML for as long as the internet has existed. But now with React, we blend them all together into this JSX, styled-component salad that knows no separation of concerns. Many developers still feel unsure about this brave new world but the benefits outweigh the drawbacks.
+
+As applications and user demands have gotten increasingly sophisticated, the toolkit needed to deliver those experiences have grown alongside it. This is very much a pattern you will see in production, mid-tier to large scale organizations. It's now very common. 
+
+Don't get caught in the cross talk about what a 'real' website is. You've learned page-based architecture, now learn component-based ones that utilize the best of breed tools like `styled-components`. Save the arguments for someone else.
+
+## Advanced Styled-components
+
+TBD.
+
+## Thoughts on CSS-in-JSS
+
+Some rules of the road:
+
+- Any of these CSS-in-JS approaches get tedious quickly if you aren't careful. Don't get too fancy. This should just be styling at the end of the day. If you find yourself fighting a tool, just fall back to regular CSS.
+- When to use component styling is subjective. The larger the site, the more it makes sense to create a library of styled components you can use around your application (hence the name, styled-components). You can think of a completed set much the same way you might use a recipe in your kitchen as a baseline that you extend as you go (any creative cooks out there?!?).
+- If you are going to make heavy use of a certain style and get confused by the wild world of CSS-in-JS, **just put it in a global stylesheet** and go about the rest of your life. It's really fine.
+- Shopify has a design system called [Polaris](https://polaris.shopify.com/components/get-started), which is fantastic for a whole bunch of reasons. For our purposes, it has an excellent React component library that adheres closely to the principles we've laid out in this lesson - give it a shot. 
+- Another good example is [Buffet.io](https://www.buffetjs.io/storybook/), which uses a React component library showcase tool called Storybook. There are **tons** of examples of component libraries out, go explore. Maybe you can use some of what people are offering up?
 
 ### Resources
 
-- [Imperative vs. Declarative Javascript](http://www.tysoncadenhead.com/blog/the-state-of-javascript-a-shift-from-imperative-to-declarative#.VxgGxZMrKfQ)
+- [9 CSS-in-JS libraries you should know](https://blog.bitsrc.io/9-css-in-js-libraries-you-should-know-in-2018-25afb4025b9b)
+- [Styled Components main site, good not great documentation](https://www.styled-components.com/)
 - [Styling in React](http://survivejs.com/webpack_react/styling_react/)
-- [ReactJS Fundamentals Course](http://courses.reactjsprogram.com/courses/reactjsfundamentals)
+- [Four ways to style a component](https://codeburst.io/4-four-ways-to-style-react-components-ac6f323da822)
