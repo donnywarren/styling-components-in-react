@@ -51,7 +51,7 @@ class SimpleComponent extends Component {
     super(props)
 
     this.state = {
-      statement = "You have more dollars than sense -John's dad."
+      statement: "You have more dollars than sense -John's dad."
     }
   }
 
@@ -102,7 +102,7 @@ class SimpleComponent extends Component {
     super(props)
 
     this.state = {
-      statement = "You have more dollars than sense -John's dad."
+      statement: "You have more dollars than sense -John's dad."
     }
   }
 
@@ -140,7 +140,7 @@ class SimpleComponent extends Component {
     super(props)
 
     this.state = {
-      statement = "You have more dollars than sense -John's dad."
+      statement: "You have more dollars than sense -John's dad."
     }
   }
 
@@ -312,10 +312,6 @@ The first time you see this, it's kinda shocking. We're been separating out our 
 As applications and user demands have gotten increasingly sophisticated, the toolkit needed to deliver those experiences have grown alongside it. This is very much a pattern you will see in production, mid-tier to large scale organizations. It's now very common. 
 
 Don't get caught in the cross talk about what a 'real' website is. You've learned page-based architecture, now learn component-based ones that utilize the best of breed tools like `styled-components`. Save the arguments for someone else.
-
-## Advanced Styled-components
-
-TBD.
 
 ## Thoughts on CSS-in-JSS
 
